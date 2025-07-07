@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan & Wallet App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items to the start to prevent vertical centering issues on smaller screens */
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column; /* Stack sections on small screens */
+        }
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row; /* Side-by-side on larger screens */
+            }
+        }
+        .section {
+            padding: 30px;
+            flex: 1;
+        }
+        .section + .section {
+            border-top: 1px solid #e0e0e0;
+        }
+        @media (min-width: 768px) {
+            .section + .section {
+                border-top: none;
+                border-left: 1px solid #e0e0e0;
+            }
+        }
+        input, button {
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+        }
+        button {
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #e0e7ff;
+            color: #4f46e5;
+        }
+        .message-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        .message-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .message-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .message-info {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        .transaction-item {
+            background-color: #f9fafb;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .transaction-item span:first-child {
+            font-weight: 500;
+        }
+        .transaction-item span:last-child {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container">
+        <!-- Loan Eligibility Section -->
+        <div class="section">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Loan Eligibility Check</h2>
+            <form id="loanForm" class="space-y-4">
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age:</label>
+                    <input type="number" id="age" name="age" class="mt-1 block w-full border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm" placeholder="e.g., 30" required>
+                </div>
+                <div>
+                    <label for="income" class="block text-sm font-medium text-gray-700 mb-1">Annual Income ($):</label>
+                    <input type="number" id="income" name="income" class="mt-1 block w-full border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm" placeholder="e.g., 50000" step="0.01" required>
+                </div>
+                <div>
+                    <label for="creditScore" class="block text-sm font-medium text-gray-700 mb-1">Credit Score (300-850):</label>
+                    <input type="number" id="creditScore" name="creditScore" class="mt-1 block w-full border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm" placeholder="e.g., 720" min="300" max="850" required>
+                </div>
+                <div>
+                    <label for="employmentYears" class="block text-sm font-medium text-gray-700 mb-1">Years of Employment:</label>
+                    <input type="number" id="employmentYears" name="employmentYears" class="mt-1 block w-full border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm" placeholder="e.g., 5" step="0.1" required>
+                </div>
+                <button type="submit" class="w-full btn-primary">Check Eligibility</button>
+            </form>
+            <div id="loanMessage" class="message-box hidden"></div>
+        </div>
+
+        <!-- Wallet Management Section -->
+        <div class="section">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Wallet Management</h2>
+
+            <div class="mb-6 text-center">
+                <p class="text-lg text-gray-700">Current Balance:</p>
+                <p id="walletBalance" class="text-4xl font-extrabold text-indigo-600">$0.00</p>
+            </div>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="depositAmount" class="block text-sm font-medium text-gray-700 mb-1">Deposit Amount ($):</label>
+                    <input type="number" id="depositAmount" class="mt-1 block w-full border border-gray-300 shadow-sm sm:text-sm" placeholder="e.g., 100.00" step="0.01">
+                    <button id="depositBtn" class="mt-3 w-full btn-secondary">Deposit</button>
+                </div>
+                <div>
+                    <label for="withdrawAmount" class="block text-sm font-medium text-gray-700 mb-1">Withdraw Amount ($):</label>
+                    <input type="number" id="withdrawAmount" class="mt-1 block w-full border border-gray-300 shadow-sm sm:text-sm" placeholder="e.g., 50.00" step="0.01">
+                    <button id="withdrawBtn" class="mt-3 w-full btn-secondary">Withdraw</button>
+                </div>
+            </div>
+
+            <div id="walletMessage" class="message-box hidden"></div>
+
+            <h3 class="text-xl font-bold text-gray-800 mb-4 mt-8">Transaction History</h3>
+            <div id="transactionHistory" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                <!-- Transactions will be loaded here -->
+                <p class="text-gray-500 text-center">No transactions yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wallet Class (JavaScript equivalent of Python Wallet class)
+        class Wallet {
+            constructor(initialBalance = 0.0) {
+                this.balance = parseFloat(initialBalance) >= 0 ? parseFloat(initialBalance) : 0.0;
+                this.transactions = [];
+            }
+
+            deposit(amount) {
+                amount = parseFloat(amount);
+                if (isNaN(amount) || amount <= 0) {
+                    return { success: false, message: "Invalid deposit amount. Please enter a positive number." };
+                }
+                this.balance += amount;
+                this._recordTransaction("Deposit", amount);
+                return { success: true, message: `Successfully deposited $${amount.toFixed(2)}. New balance: $${this.balance.toFixed(2)}` };
+            }
+
+            withdraw(amount) {
+                amount = parseFloat(amount);
+                if (isNaN(amount) || amount <= 0) {
+                    return { success: false, message: "Invalid withdrawal amount. Please enter a positive number." };
+                }
+                if (amount > this.balance) {
+                    return { success: false, message: `Insufficient funds. Current balance: $${this.balance.toFixed(2)}. Attempted withdrawal: $${amount.toFixed(2)}.` };
+                }
+                this.balance -= amount;
+                this._recordTransaction("Withdrawal", amount);
+                return { success: true, message: `Successfully withdrew $${amount.toFixed(2)}. New balance: $${this.balance.toFixed(2)}` };
+            }
+
+            getBalance() {
+                return this.balance;
+            }
+
+            getTransactions() {
+                return this.transactions;
+            }
+
+            _recordTransaction(type, amount) {
+                const now = new Date();
+                this.transactions.push({
+                    type: type,
+                    amount: amount,
+                    date: now.toLocaleString() // Formats date and time based on locale
+                });
+            }
+        }
+
+        // Initialize Wallet
+        const userWallet = new Wallet();
+
+        // DOM Elements
+        const loanForm = document.getElementById('loanForm');
+        const loanMessageDiv = document.getElementById('loanMessage');
+        const walletBalanceSpan = document.getElementById('walletBalance');
+        const depositAmountInput = document.getElementById('depositAmount');
+        const depositBtn = document.getElementById('depositBtn');
+        const withdrawAmountInput = document.getElementById('withdrawAmount');
+        const withdrawBtn = document.getElementById('withdrawBtn');
+        const walletMessageDiv = document.getElementById('walletMessage');
+        const transactionHistoryDiv = document.getElementById('transactionHistory');
+
+        // Function to display messages
+        function displayMessage(element, message, type) {
+            element.textContent = message;
+            element.classList.remove('hidden', 'message-success', 'message-error', 'message-info');
+            if (type === 'success') {
+                element.classList.add('message-success');
+            } else if (type === 'error') {
+                element.classList.add('message-error');
+            } else {
+                element.classList.add('message-info');
+            }
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Update Wallet UI
+        function updateWalletUI() {
+            walletBalanceSpan.textContent = `$${userWallet.getBalance().toFixed(2)}`;
+            const transactions = userWallet.getTransactions();
+            transactionHistoryDiv.innerHTML = ''; // Clear previous transactions
+
+            if (transactions.length === 0) {
+                transactionHistoryDiv.innerHTML = '<p class="text-gray-500 text-center">No transactions yet.</p>';
+                return;
+            }
+
+            transactions.forEach(transaction => {
+                const transactionItem = document.createElement('div');
+                transactionItem.classList.add('transaction-item');
+                transactionItem.innerHTML = `
+                    <span>${transaction.type}: $${transaction.amount.toFixed(2)}</span>
+                    <span>${transaction.date}</span>
+                `;
+                transactionHistoryDiv.prepend(transactionItem); // Add new transactions to the top
+            });
+        }
+
+        // Loan Eligibility Check Logic
+        loanForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const age = parseInt(document.getElementById('age').value);
+            const income = parseFloat(document.getElementById('income').value);
+            const creditScore = parseInt(document.getElementById('creditScore').value);
+            const employmentYears = parseFloat(document.getElementById('employmentYears').value);
+
+            let isEligible = true;
+            const reasonsNotEligible = [];
+
+            // Define loan eligibility criteria
+            const minAge = 18;
+            const minIncome = 30000.00;
+            const minCreditScore = 650;
+            const minEmploymentYears = 2;
+
+            if (isNaN(age) || age < minAge) {
+                isEligible = false;
+                reasonsNotEligible.push(`Must be at least ${minAge} years old (Your age: ${age || 'N/A'}).`);
+            }
+            if (isNaN(income) || income < minIncome) {
+                isEligible = false;
+                reasonsNotEligible.push(`Annual income must be at least $${minIncome.toFixed(2)} (Your income: $${(income || 0).toFixed(2)}).`);
+            }
+            if (isNaN(creditScore) || creditScore < minCreditScore || !(creditScore >= 300 && creditScore <= 850)) {
+                isEligible = false;
+                if (isNaN(creditScore) || !(creditScore >= 300 && creditScore <= 850)) {
+                    reasonsNotEligible.push("Credit score must be between 300 and 850.");
+                } else {
+                    reasonsNotEligible.push(`Credit score must be at least ${minCreditScore} (Your score: ${creditScore || 'N/A'}).`);
+                }
+            }
+            if (isNaN(employmentYears) || employmentYears < minEmploymentYears) {
+                isEligible = false;
+                reasonsNotEligible.push(`Must have at least ${minEmploymentYears} years of employment (Your years: ${employmentYears || 'N/A'}).`);
+            }
+
+            if (isEligible) {
+                displayMessage(loanMessageDiv, "Congratulations! You are eligible for a loan.", 'success');
+            } else {
+                let message = "Sorry, you are not eligible for a loan at this time due to the following reasons:<br>";
+                message += reasonsNotEligible.map(reason => `- ${reason}`).join('<br>');
+                loanMessageDiv.innerHTML = message; // Use innerHTML for line breaks
+                displayMessage(loanMessageDiv, message, 'error');
+            }
+        });
+
+        // Wallet Deposit Logic
+        depositBtn.addEventListener('click', function() {
+            const amount = depositAmountInput.value;
+            const result = userWallet.deposit(amount);
+            displayMessage(walletMessageDiv, result.message, result.success ? 'success' : 'error');
+            if (result.success) {
+                depositAmountInput.value = ''; // Clear input on success
+            }
+            updateWalletUI();
+        });
+
+        // Wallet Withdraw Logic
+        withdrawBtn.addEventListener('click', function() {
+            const amount = withdrawAmountInput.value;
+            const result = userWallet.withdraw(amount);
+            displayMessage(walletMessageDiv, result.message, result.success ? 'success' : 'error');
+            if (result.success) {
+                withdrawAmountInput.value = ''; // Clear input on success
+            }
+            updateWalletUI();
+        });
+
+        // Initial UI update on load
+        document.addEventListener('DOMContentLoaded', updateWalletUI);
+    </script>
+</body>
+</html>
